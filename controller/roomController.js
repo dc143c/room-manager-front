@@ -27,9 +27,9 @@ delete: (params, body) => new Promise(async (resolve, reject) => {
     }
 }),
 
-create: (params, body) => new Promise(async (resolve, reject) => {
+create: (body) => new Promise(async (resolve, reject) => {
     try{
-        await axios.post(`${url}/${params}`, body)
+        await axios.post(url, body)
         .then((res) => {
             resolve(res.data)
         })

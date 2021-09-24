@@ -23,7 +23,7 @@ app.use(session({
 //Routes
 app.use(require('./routes/routes.js'))
 
-var porta = process.env.PORT
+var porta = process.env.PORT || 80
 
 app.listen(porta, function (err) {
     if (err) console.log(err);

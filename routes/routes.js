@@ -62,8 +62,10 @@ router.post('/findAll', async function (req, res) {
 
 
 router.post('/createRoom', async function (req, res) {
+    console.log(req.body)
     try{
-        controller.create({}, req.body.data).then((response) => {
+        controller.create(req.body).then((response) => {
+            console.log(response)
             res.send(response)
         })
     } catch (err) {
