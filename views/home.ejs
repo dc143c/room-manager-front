@@ -300,7 +300,7 @@
     function createRoom(){
         let all = $(`.form.updateInformationForm`).form(`get values`) 
         $.ajax({
-            url: "/updateById",
+            url: "/createRoom",
             method: "post",
             data: {
                 data: all
