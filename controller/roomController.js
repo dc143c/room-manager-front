@@ -10,7 +10,7 @@ update: (params, body) => new Promise(async (resolve, reject) => {
             resolve(res.data)
         })
     }catch(err){
-        console.log("Error on update: " + err.data.message);
+        console.log("Error on update: " + err.data);
         reject(err.data)
     }
 }),
@@ -22,7 +22,7 @@ delete: (params, body) => new Promise(async (resolve, reject) => {
             resolve(res.data)
         })
     }catch(err){
-        console.log("Error on delete: " + err.data.message);
+        console.log("Error on delete: " + err.data);
         reject(err.data)
     }
 }),
@@ -34,7 +34,7 @@ create: (params, body) => new Promise(async (resolve, reject) => {
             resolve(res.data)
         })
     }catch(err){
-        console.log("Error on creation: " + err.data.message);
+        console.log("Error on creation: " + err.data);
         reject(err.data)
     }
 }),
