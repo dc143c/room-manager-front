@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Manager</title>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.8/dist/semantic.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.8/dist/semantic.min.js"></script>
+</head>
+<body style="background-color: crimson;">
+    <div class="ui container card" style="margin-top: 2%; padding: 1%; margin-bottom: 5%;">
+        <div>
+            <button class="ui compact icon  right floated button edit" onclick="$(`.ui.modal.create`).modal(`show`)">
+                <i class="plus icon"></i>
+              </button>
+        </div>
+        <h2 class="ui center aligned icon header">
+            <i class="circular users icon"></i>
+            <div class="content">
+                Rooms
+            <div class="sub header">Manage rooms and set up conferences.</div>
+        </h2>
+        <div class="ui divider"></div>
+        <div class="ui grid" style="overflow-y: scroll; overflow-x: hidden;">
+            <div class="ui sixteen wide column">
+                <div class="ui four cards">
+                    <% for(var i = 0; i<rooms.length; i++) {%> 
+                        <div class="card" id="<%- rooms[i].id %>">
+                        <div class="content">
+                            <div class="header">
+                            <%- rooms[i].name %>
+                            </div>
+                            <div class="meta">
+                            <%- rooms[i].date %>
+                            </div>
+                            <div class="description">
+                            From <span style="color: firebrick;"><%- rooms[i].startHour %></span> to <span style="color: firebrick;"><%- rooms[i].endHour %></span>
+                            </div>
+                        </div>
+                        <div class="extra content">
+                            <div class="ui three buttons">
+                                <button class="ui compact icon button delete" onclick="deleteThis('<%- rooms[i].id %>')">
+                                  <i class="trash icon"></i>
+                                </button>
+                                <button class="ui compact icon button info" onclick="findById('<%- rooms[i].id %>')">
+                                    <i class="zoom icon"></i>
+                                  </button>
+                                  <button class="ui compact icon button edit" onclick="updateById('<%- rooms[i].id %>')">
+                                    <i class="edit icon"></i>
+                                  </button>
+                            </div>
+                        </div>
+                        </div>
+                    <%}%>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui mini modal infos">
+        <div class="header roomName">
+        </div>
+        <div class="content">
+          <div class="description">
+            <div class="ui header information"></div>
+          </div>
+        </div>
+        <div class="actions">
+          <div class="ui positive right labeled icon button">
+            Okay, got it!
+            <i class="checkmark icon"></i>
+          </div>
+        </div>
+      </div>
+
+    <div class="ui modal updateInfo">
+        <div class="roomId" hidden></div>
+        <div class="header roomName">
+        </div>
+        <div class="content">
+            <form class="ui form updateInformationForm" style="margin: 2%;">
+                <div class="field">
+                    <label>Date</label>
+                    <input type="text" name="date" placeholder="Meeting date">
+                  </div>
+                <div class="field">
+                  <label>Name</label>
+                  <input type="text" name="name" placeholder="Room Name">
+                </div>
+                <div class="field" hidden>
+                    <input type="number" name="id">
+                </div>
+                <div class="field">
+                  <label>Begin Time</label>
+                  <input type="text" name="startHour" placeholder="Begin at">
+                </div>
+                <div class="field">
+                  <label>End Time</label>
+                  <input type="text" name="endHour" placeholder="End at">
+                </div>
+            </form>
+        </div>
+        <div class="actions">
+        <div class="ui cancel red button">
+            Cancel
+        </div>
+        <div class="ui positive right labeled icon button" onclick="submitUpdate()">
+            Okay, go!
+            <i class="checkmark icon"></i>
+        </div>
+        </div>
+    </div>
+     
+    <div class="ui modal create">
+        <div class="roomId" hidden></div>
+        <div class="header roomName">
+            Room Creation
+        </div>
+        <div class="content">
+            <form class="ui form updateInformationForm" style="margin: 2%;">
+                <div class="field">
+                    <label>Date</label>
+                    <input type="text" name="date" placeholder="Meeting date">
+                  </div>
+                <div class="field">
+                  <label>Name</label>
+                  <input type="text" name="name" placeholder="Room Name">
+                </div>
+                <div class="field" hidden>
+                    <input type="number" name="id">
+                </div>
+                <div class="field">
+                  <label>Begin Time</label>
+                  <input type="text" name="startHour" placeholder="Begin at">
+                </div>
+                <div class="field">
+                  <label>End Time</label>
+                  <input type="text" name="endHour" placeholder="End at">
+                </div>
+            </form>
+        </div>
+        <div class="actions">
+        <div class="ui cancel red button">
+            Cancel
+        </div>
+        <div class="ui positive right labeled icon button" onclick="createRoom()">
+            Okay, go!
+            <i class="checkmark icon"></i>
+        </div>
+        </div>
+    </div>
+
+</body>
+<script>
+
+    $(`.form.updateInformationForm`).form({
+        fields: {
+        name: 'empty',
+        startHour: 'empty',
+        endHour: 'empty',
+        id,
+        date: 'empty'
+        }
+    })
+
+    function deleteThis(id) {
+        let itemIdentificator = parseFloat(id.trim());
+        $(`#${itemIdentificator} > .extra.content > .delete`).addClass("disabled");
+        $.ajax({
+            url: "/deleteById",
+            method: "post",
+            data: {
+                id: itemIdentificator
+            }
+        }).then((res) => {
+            console.log(res)
+            reloadAll()
+        }).fail((err) => {
+            alert("Error")
+            console.log(err)
+        })
+    }
+
+    function findById(id) {
+        let itemIdentificator = parseFloat(id.trim());
+        $(`#${itemIdentificator} > .extra.content > .info`).addClass("disabled");
+        $.ajax({
+            url: "/findById",
+            method: "post",
+            data: {
+                id: itemIdentificator
+            }
+        }).then((res) => {
+            $(`.modal.infos > .roomName`).html(res.name);
+            $(`.modal.infos > .content > .description > .information`).html(`From <span style="color: firebrick;"> ${res.startHour}</span> to <span style="color: firebrick;">${res.endHour}</span>`);
+            $(`.modal.infos`).modal(`show`)
+            $(`#${itemIdentificator} > .extra.content > .info`).removeClass("disabled");
+            console.log(res)
+        }).fail((err) => {
+            alert("Error")
+            console.log(err)
+        })
+    }
+
+    function updateById(id){
+        let itemIdentificator = parseFloat(id.trim());
+        $(`#${itemIdentificator} > .extra.content > .edit`).addClass("disabled");
+        $.ajax({
+            url: "/findById",
+            method: "post",
+            data: {
+                id: itemIdentificator
+            }
+        }).then((res) => {
+            $(`#${itemIdentificator} > .extra.content > .edit`).removeClass("disabled");
+            $(`.updateInfo > .roomName`).html(res.name);
+            $(`.updateInfo > .roomId`).html(itemIdentificator)
+            $(`.updateInfo > .content .updateInformationForm`).form(`set value`, "id", parseFloat(res.id))
+            $(`.updateInfo > .content .updateInformationForm`).form(`set value`, "name", res.name)
+            $(`.updateInfo > .content .updateInformationForm`).form(`set value`, "date", res.date)
+            $(`.updateInfo > .content .updateInformationForm`).form(`set value`, "startHour", res.startHour)
+            $(`.updateInfo > .content .updateInformationForm`).form(`set value`, "endHour", res.endHour)
+            $(`.updateInfo`).modal(`show`)
+            console.log(res)
+        }).fail((err) => {
+            alert("Error")
+            console.log(err)
+        })
+    }
+
+    function submitUpdate(){
+        let itemIdentificator = parseFloat($(`.updateInfo > .roomId`).text())
+        let all = $(`.form.updateInformationForm`).form(`get values`)
+        all.id = parseFloat(all.id)
+
+        $.ajax({
+            url: "/updateById",
+            method: "post",
+            data: {
+                id: itemIdentificator,
+                data: all
+            }
+        }).then((res) => {
+            console.log(res)
+            reloadAll()
+        }).fail((err) => {
+            alert("Error")
+            console.log(err)
+        })
+    }
+
+    function reloadAll(){
+        $.ajax({
+            url: "/findAll",
+            method: "post"
+        }).then((res) => {
+            console.log(res)
+            $(`.four.cards`).html(``)
+            res.forEach((it) => {
+                let a = ''
+                a += `
+                <div class="card" id="${it.id}">
+                <div class="content">
+                    <div class="header">
+                    ${it.name}
+                    </div>
+                    <div class="meta">
+                    ${it.date}
+                    </div>
+                    <div class="description">
+                    From <span style="color: firebrick;">${it.startHour}</span> to <span style="color: firebrick;">${it.endHour}</span>
+                    </div>
+                </div>
+                <div class="extra content">
+                    <div class="ui three buttons">
+                        <button class="ui compact icon button delete" onclick="deleteThis('${it.id}')">
+                            <i class="trash icon"></i>
+                        </button>
+                        <button class="ui compact icon button info" onclick="findById('${it.id}')">
+                            <i class="zoom icon"></i>
+                        </button>
+                        <button class="ui compact icon button edit" onclick="updateById('${it.id}')">
+                            <i class="edit icon"></i>
+                        </button>
+                    </div>
+                </div>
+                </div>
+                `
+                
+                $(`.four.cards`).append(a)
+            })
+        }).fail((err) => {
+            alert("Error")
+            console.log(err)
+        })
+    }
+
+    function createRoom(){
+        let all = $(`.form.updateInformationForm`).form(`get values`) 
+        $.ajax({
+            url: "/updateById",
+            method: "post",
+            data: {
+                data: all
+            }
+        }).then((res) => {
+            console.log(res)
+            reloadAll()
+        }).fail((err) => {
+            alert("Error")
+            console.log(err)
+        })
+    }
+</script>
+</html>
